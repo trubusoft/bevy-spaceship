@@ -1,5 +1,5 @@
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Commands, Component, Entity, info, Query, Startup, Update};
+use bevy::prelude::{App, Commands, Component, Entity, info, Query, SpatialBundle, Startup, Transform, Update, Vec3};
 
 fn main() {
     App::new()
@@ -12,47 +12,36 @@ fn main() {
         .run();
 }
 
-
-#[derive(Component, Debug)]
-struct Position {
-    x: f32,
-    y: f32,
-}
-
 #[derive(Component, Debug)]
 struct Velocity {
-    x: f32,
-    y: f32,
+    value: Vec3,
 }
 
 fn spawn_spaceship(
     mut commands: Commands
 ) {
     commands.spawn((
-        Position {
-            x: 0.0,
-            y: 0.0,
-        },
+        SpatialBundle::default(),
         Velocity {
-            x: 0.2,
-            y: 0.1,
+            value: Vec3::new(0.1, 0.2, 0.3)
         }
     ));
 }
 
 fn apply_velocity(
-    mut query: Query<(&Velocity, &mut Position)>
+    mut query: Query<(&Velocity, &mut Transform)>
 ) {
-    for (velocity, mut position) in query.iter_mut() {
-        position.x += velocity.x;
-        position.y += velocity.y;
+    for (velocity, mut transform) in query.iter_mut() {
+        transform.translation.x += velocity.value.x;
+        transform.translation.y += velocity.value.y;
+        transform.translation.z += velocity.value.z;
     }
 }
 
 fn print_position(
-    mut query: Query<(Entity, &Position, &Velocity)>
+    query: Query<(Entity, &Velocity, &Transform)>
 ) {
-    for (entity, position, velocity) in query.iter_mut() {
-        info!("Entity {:?} Position {:?} Velocity {:?}", entity, position, velocity);
+    for (entity, velocity, transform) in query.iter() {
+        info!("Entity {:?} Velocity {:?} Position {:?}", entity, velocity, transform.translation);
     }
 }
