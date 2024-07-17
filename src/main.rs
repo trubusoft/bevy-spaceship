@@ -1,5 +1,5 @@
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Commands, Component, Entity, Query, Startup, Update};
+use bevy::prelude::{App, Commands, Component, Entity, info, Query, Startup, Update};
 
 fn main() {
     App::new()
@@ -53,6 +53,6 @@ fn print_position(
     mut query: Query<(Entity, &Position, &Velocity)>
 ) {
     for (entity, position, velocity) in query.iter_mut() {
-        println!("Entity {:?} Position {:?} Velocity {:?}", entity, position, velocity);
+        info!("Entity {:?} Position {:?} Velocity {:?}", entity, position, velocity);
     }
 }
