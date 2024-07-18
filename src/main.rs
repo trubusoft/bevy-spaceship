@@ -8,10 +8,12 @@ use spaceship::SpaceshipPlugin;
 use crate::asset_loader::AssetLoaderPlugin;
 use crate::asteroid::AsteroidPlugin;
 use crate::camera::CameraPlugin;
+use crate::collision_detection::CollisionDetectionPlugin;
 
 mod asset_loader;
 mod asteroid;
 mod camera;
+mod collision_detection;
 mod debug;
 mod movement;
 mod spaceship;
@@ -27,6 +29,7 @@ fn main() {
         .add_plugins(CameraPlugin)
         .add_plugins(AssetLoaderPlugin)
         .add_plugins(MovementPlugin)
+        .add_plugins(CollisionDetectionPlugin)
         .add_plugins(DebugPlugin)
         .add_plugins(SpaceshipPlugin)
         .add_plugins(AsteroidPlugin)
