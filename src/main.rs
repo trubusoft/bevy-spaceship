@@ -5,9 +5,11 @@ use debug::DebugPlugin;
 use movement::MovementPlugin;
 use spaceship::SpaceshipPlugin;
 
+use crate::asset_loader::AssetLoaderPlugin;
 use crate::asteroid::AsteroidPlugin;
 use crate::camera::CameraPlugin;
 
+mod asset_loader;
 mod asteroid;
 mod camera;
 mod debug;
@@ -23,6 +25,7 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugins(CameraPlugin)
+        .add_plugins(AssetLoaderPlugin)
         .add_plugins(MovementPlugin)
         .add_plugins(DebugPlugin)
         .add_plugins(SpaceshipPlugin)
