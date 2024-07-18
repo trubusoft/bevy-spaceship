@@ -5,8 +5,10 @@ use debug::DebugPlugin;
 use movement::MovementPlugin;
 use spaceship::SpaceshipPlugin;
 
+use crate::asteroid::AsteroidPlugin;
 use crate::camera::CameraPlugin;
 
+mod asteroid;
 mod camera;
 mod debug;
 mod movement;
@@ -24,5 +26,6 @@ fn main() {
         .add_plugins(MovementPlugin)
         .add_plugins(DebugPlugin)
         .add_plugins(SpaceshipPlugin)
+        .add_plugins(AsteroidPlugin)
         .run();
 }
