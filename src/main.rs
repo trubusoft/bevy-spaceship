@@ -1,58 +1,28 @@
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Commands, Component, Entity, info, Query, Startup, Update};
+use bevy::prelude::{AmbientLight, App, ClearColor, Color};
+
+use debug::DebugPlugin;
+use movement::MovementPlugin;
+use spaceship::SpaceshipPlugin;
+
+use crate::camera::CameraPlugin;
+
+mod camera;
+mod debug;
+mod movement;
+mod spaceship;
 
 fn main() {
     App::new()
+        .insert_resource(ClearColor(Color::rgb(0.1, 0.0, 0.15)))
+        .insert_resource(AmbientLight {
+            color: Color::default(),
+            brightness: 750.0,
+        })
         .add_plugins(DefaultPlugins)
-        .add_systems(Startup, spawn_spaceship)
-        .add_systems(Update, (
-            apply_velocity,
-            print_position
-        ))
+        .add_plugins(CameraPlugin)
+        .add_plugins(MovementPlugin)
+        .add_plugins(DebugPlugin)
+        .add_plugins(SpaceshipPlugin)
         .run();
-}
-
-
-#[derive(Component, Debug)]
-struct Position {
-    x: f32,
-    y: f32,
-}
-
-#[derive(Component, Debug)]
-struct Velocity {
-    x: f32,
-    y: f32,
-}
-
-fn spawn_spaceship(
-    mut commands: Commands
-) {
-    commands.spawn((
-        Position {
-            x: 0.0,
-            y: 0.0,
-        },
-        Velocity {
-            x: 0.2,
-            y: 0.1,
-        }
-    ));
-}
-
-fn apply_velocity(
-    mut query: Query<(&Velocity, &mut Position)>
-) {
-    for (velocity, mut position) in query.iter_mut() {
-        position.x += velocity.x;
-        position.y += velocity.y;
-    }
-}
-
-fn print_position(
-    mut query: Query<(Entity, &Position, &Velocity)>
-) {
-    for (entity, position, velocity) in query.iter_mut() {
-        info!("Entity {:?} Position {:?} Velocity {:?}", entity, position, velocity);
-    }
 }
