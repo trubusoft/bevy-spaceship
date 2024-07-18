@@ -1,15 +1,25 @@
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Commands, Component, Entity, info, Query, SpatialBundle, Startup, Transform, Update, Vec3};
+use bevy::prelude::{App, Commands, Component, Entity, info, Plugin, Query, SpatialBundle, Startup, Transform, Update, Vec3};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_systems(Startup, spawn_spaceship)
-        .add_systems(Update, (
-            apply_velocity,
-            print_position
-        ))
+        .add_plugins(SpaceshipPlugin)
         .run();
+}
+
+
+pub struct SpaceshipPlugin;
+
+impl Plugin for SpaceshipPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_systems(Startup, spawn_spaceship)
+            .add_systems(Update, (
+                apply_velocity,
+                print_position
+            ));
+    }
 }
 
 #[derive(Component, Debug)]
