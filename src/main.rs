@@ -1,5 +1,13 @@
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Commands, Component, Entity, info, Plugin, Query, SpatialBundle, Startup, Transform, Update, Vec3};
+use bevy::prelude::App;
+
+use debug::DebugPlugin;
+use movement::MovementPlugin;
+use spaceship::SpaceshipPlugin;
+
+mod debug;
+mod movement;
+mod spaceship;
 
 fn main() {
     App::new()
@@ -8,66 +16,4 @@ fn main() {
         .add_plugins(DebugPlugin)
         .add_plugins(SpaceshipPlugin)
         .run();
-}
-
-
-pub struct SpaceshipPlugin;
-
-impl Plugin for SpaceshipPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_spaceship)
-        ;
-    }
-}
-
-pub struct MovementPlugin;
-
-impl Plugin for MovementPlugin {
-    fn build(&self, app: &mut App) {
-        app
-            .add_systems(Update, apply_velocity);
-    }
-}
-
-pub struct DebugPlugin;
-
-impl Plugin for crate::DebugPlugin {
-    fn build(&self, app: &mut App) {
-        app
-            .add_systems(Update, print_position);
-    }
-}
-
-#[derive(Component, Debug)]
-struct Velocity {
-    value: Vec3,
-}
-
-fn spawn_spaceship(
-    mut commands: Commands
-) {
-    commands.spawn((
-        SpatialBundle::default(),
-        Velocity {
-            value: Vec3::new(0.1, 0.2, 0.3)
-        }
-    ));
-}
-
-fn apply_velocity(
-    mut query: Query<(&Velocity, &mut Transform)>
-) {
-    for (velocity, mut transform) in query.iter_mut() {
-        transform.translation.x += velocity.value.x;
-        transform.translation.y += velocity.value.y;
-        transform.translation.z += velocity.value.z;
-    }
-}
-
-fn print_position(
-    query: Query<(Entity, &Velocity, &Transform)>
-) {
-    for (entity, velocity, transform) in query.iter() {
-        info!("Entity {:?} Velocity {:?} Position {:?}", entity, velocity, transform.translation);
-    }
 }
