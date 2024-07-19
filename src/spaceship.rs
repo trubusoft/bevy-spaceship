@@ -1,33 +1,41 @@
 use bevy::prelude::{
-    App, ButtonInput, Commands, Component, default, Entity, IntoSystemConfigs, KeyCode, Plugin,
-    PostStartup, Query, Res, SceneBundle, Time, Transform, Update, Vec3, With,
+    App, ButtonInput, Commands, Component, default, Entity, IntoSystemConfigs, KeyCode, NextState,
+    OnEnter, Plugin, PostStartup, Query, Res, ResMut, SceneBundle, Time, Transform, Update, Vec3,
+    With,
 };
 
 use crate::asset_loader::SceneAssets;
-use crate::collision_detection::Collider;
+use crate::collision_detection::{Collider, CollisionDamage};
+use crate::health::Health;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
 use crate::schedule::InGameSet;
+use crate::state::GameState;
 
 pub struct SpaceshipPlugin;
 
 impl Plugin for SpaceshipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, spawn_spaceship).add_systems(
-            Update,
-            (
-                spaceship_movement_controls,
-                spaceship_weapon_controls,
-                spaceship_shield_controls,
+        app.add_systems(PostStartup, spawn_spaceship)
+            .add_systems(OnEnter(GameState::GameOver), spawn_spaceship)
+            .add_systems(
+                Update,
+                (
+                    spaceship_movement_controls,
+                    spaceship_weapon_controls,
+                    spaceship_shield_controls,
+                )
+                    .chain()
+                    .in_set(InGameSet::UserInput),
             )
-                .chain()
-                .in_set(InGameSet::UserInput),
-        );
+            .add_systems(Update, spaceship_destroyed.in_set(InGameSet::EntityUpdates));
     }
 }
 
 fn spawn_spaceship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
     commands.spawn((
         Spaceship,
+        Health::new(SPACESHIP_HEALTH),
+        CollisionDamage::new(SPACESHIP_COLLISION_DAMAGE),
         MovingObjectBundle {
             velocity: Velocity::new(Vec3::ZERO),
             acceleration: Acceleration::new(Vec3::ZERO),
@@ -89,6 +97,8 @@ fn spaceship_weapon_controls(
 
         commands.spawn((
             SpaceshipMissile,
+            Health::new(MISSILE_HEALTH),
+            CollisionDamage::new(MISSILE_COLLISION_DAMAGE),
             MovingObjectBundle {
                 velocity: Velocity::new(-spaceship_transform.forward() * MISSILE_SPEED),
                 acceleration: Acceleration::new(Vec3::ZERO),
@@ -119,12 +129,25 @@ fn spaceship_shield_controls(
     }
 }
 
+fn spaceship_destroyed(
+    mut next_state: ResMut<NextState<GameState>>,
+    query: Query<(), With<Spaceship>>,
+) {
+    if query.get_single().is_err() {
+        next_state.set(GameState::GameOver);
+    }
+}
+
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0, 0.0, -20.0);
 const SPACESHIP_TRANSLATION_SPEED: f32 = 25.0;
 const SPACESHIP_ROTATION_SPEED: f32 = 2.5;
 const SPACESHIP_ROLL_SPEED: f32 = 2.5;
 const MISSILE_SPEED: f32 = 50.0;
 const MISSILE_FORWARD_SPAWN_RANGE: f32 = 10.0;
+const SPACESHIP_HEALTH: f32 = 100.0;
+const SPACESHIP_COLLISION_DAMAGE: f32 = 100.0;
+const MISSILE_HEALTH: f32 = 1.0;
+const MISSILE_COLLISION_DAMAGE: f32 = 10.0;
 
 #[derive(Component, Debug)]
 pub struct Spaceship;

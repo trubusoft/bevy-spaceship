@@ -1,12 +1,14 @@
 use bevy::app::App;
 use bevy::prelude::{
-    Commands, Component, DespawnRecursiveExt, Entity, GlobalTransform, IntoSystemConfigs, Plugin,
-    Query, Update, Vec3, With,
+    Commands, Component, DespawnRecursiveExt, Entity, GlobalTransform, IntoSystemConfigs, OnEnter,
+    Plugin, Query, Update, Vec3, With,
 };
 
 use crate::asteroid::Asteroid;
+use crate::health::Health;
 use crate::schedule::InGameSet;
 use crate::spaceship::SpaceshipMissile;
+use crate::state::GameState;
 
 pub struct DespawnPlugin;
 
@@ -17,9 +19,11 @@ impl Plugin for DespawnPlugin {
             (
                 despawn_far_away_components::<Asteroid>,
                 despawn_far_away_components::<SpaceshipMissile>,
+                despawn_dead_entities,
             )
                 .in_set(InGameSet::DespawnEntities),
-        );
+        )
+        .add_systems(OnEnter(GameState::GameOver), despawn_all_entities);
     }
 }
 
@@ -32,6 +36,20 @@ fn despawn_far_away_components<T: Component>(
         if DESPAWN_DISTANCE_THRESHOLD <= distance {
             commands.entity(entity).despawn_recursive();
         }
+    }
+}
+
+fn despawn_dead_entities(mut commands: Commands, query: Query<(Entity, &Health)>) {
+    for (entity, health) in query.iter() {
+        if health.value <= 0.0 {
+            commands.entity(entity).despawn_recursive();
+        };
+    }
+}
+
+fn despawn_all_entities(mut commands: Commands, query: Query<Entity, With<Health>>) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
 

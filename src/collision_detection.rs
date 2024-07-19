@@ -1,10 +1,11 @@
 use bevy::prelude::{
-    App, Commands, Component, DespawnRecursiveExt, Entity, GlobalTransform, IntoSystemConfigs,
+    App, Component, Entity, Event, EventReader, EventWriter, GlobalTransform, IntoSystemConfigs,
     Plugin, Query, Update, With,
 };
 use bevy::utils::HashMap;
 
 use crate::asteroid::Asteroid;
+use crate::health::Health;
 use crate::schedule::InGameSet;
 use crate::spaceship::{Spaceship, SpaceshipMissile};
 
@@ -19,12 +20,17 @@ impl Plugin for CollisionDetectionPlugin {
         .add_systems(
             Update,
             (
-                handle_collisions::<Asteroid>,
-                handle_collisions::<Spaceship>,
-                handle_collisions::<SpaceshipMissile>,
+                (
+                    handle_collisions::<Asteroid>,
+                    handle_collisions::<Spaceship>,
+                    handle_collisions::<SpaceshipMissile>,
+                ),
+                apply_collision_damage,
             )
-                .in_set(InGameSet::DespawnEntities),
-        );
+                .chain()
+                .in_set(InGameSet::EntityUpdates),
+        )
+        .add_event::<CollisionEvent>();
     }
 }
 
@@ -61,25 +67,41 @@ fn collision_detection(mut query: Query<(Entity, &GlobalTransform, &mut Collider
 }
 
 fn handle_collisions<T: Component>(
-    mut commands: Commands,
+    mut event_writer: EventWriter<CollisionEvent>,
     query: Query<(Entity, &Collider), With<T>>,
 ) {
     for (entity, collider) in query.iter() {
-        let mut despawn_issued: bool = false;
         for &collided_entity in collider.colliding_entities.iter() {
             // Entity collided with another entity of the same type.
             if query.get(collided_entity).is_ok() {
                 continue;
             }
 
-            if !despawn_issued {
-                // Despawn this entity
-                commands.entity(entity).despawn_recursive();
-
-                // Flag to avoid multiple despawn issuance
-                despawn_issued = true;
-            }
+            event_writer.send(CollisionEvent::new(entity, collided_entity));
+            break;
         }
+    }
+}
+
+fn apply_collision_damage(
+    mut event_reader: EventReader<CollisionEvent>,
+    mut health_query: Query<&mut Health>,
+    collision_damage_query: Query<&CollisionDamage>,
+) {
+    for &CollisionEvent {
+        entity,
+        collided_entity,
+    } in event_reader.read()
+    {
+        let Ok(mut health) = health_query.get_mut(entity) else {
+            continue;
+        };
+
+        let Ok(collision_damage) = collision_damage_query.get(collided_entity) else {
+            continue;
+        };
+
+        health.value -= collision_damage.value;
     }
 }
 
@@ -94,6 +116,32 @@ impl Collider {
         Self {
             radius,
             colliding_entities: vec![],
+        }
+    }
+}
+
+#[derive(Component, Debug)]
+pub struct CollisionDamage {
+    pub value: f32,
+}
+
+impl CollisionDamage {
+    pub fn new(value: f32) -> Self {
+        Self { value }
+    }
+}
+
+#[derive(Event, Debug)]
+pub struct CollisionEvent {
+    pub entity: Entity,
+    pub collided_entity: Entity,
+}
+
+impl CollisionEvent {
+    pub fn new(entity: Entity, collided_entity: Entity) -> Self {
+        Self {
+            entity,
+            collided_entity,
         }
     }
 }
