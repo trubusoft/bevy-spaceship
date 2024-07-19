@@ -1,8 +1,8 @@
 use bevy::app::App;
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    in_state, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State, States,
-    Update,
+    AppExtStates, in_state, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State,
+    States, Update,
 };
 
 #[derive(States, Clone, Copy, Eq, PartialEq, Hash, Default, Debug)]
