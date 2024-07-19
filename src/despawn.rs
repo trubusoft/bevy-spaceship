@@ -29,10 +29,10 @@ fn despawn_far_away_components<T: Component>(
 ) {
     for (entity, global_transform) in query.iter() {
         let distance = global_transform.translation().distance(Vec3::ZERO);
-        if DESPAWN_DISTANCE <= distance {
+        if DESPAWN_DISTANCE_THRESHOLD <= distance {
             commands.entity(entity).despawn_recursive();
         }
     }
 }
 
-const DESPAWN_DISTANCE: f32 = 100.0;
+const DESPAWN_DISTANCE_THRESHOLD: f32 = 100.0;

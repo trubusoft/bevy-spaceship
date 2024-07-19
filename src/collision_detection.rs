@@ -65,18 +65,20 @@ fn handle_collisions<T: Component>(
     query: Query<(Entity, &Collider), With<T>>,
 ) {
     for (entity, collider) in query.iter() {
-        'collided_list: for &collided_entity in collider.colliding_entities.iter() {
+        let mut despawn_issued: bool = false;
+        for &collided_entity in collider.colliding_entities.iter() {
             // Entity collided with another entity of the same type.
             if query.get(collided_entity).is_ok() {
-                continue 'collided_list;
+                continue;
             }
 
-            // Despawn this entity
-            commands.entity(entity).despawn_recursive();
+            if !despawn_issued {
+                // Despawn this entity
+                commands.entity(entity).despawn_recursive();
 
-            // break, so other entity that also collided with this entity did not trigger
-            // multiple despawn issuance, and continue examining other entity
-            break 'collided_list;
+                // Flag to avoid multiple despawn issuance
+                despawn_issued = true;
+            }
         }
     }
 }
