@@ -1,11 +1,30 @@
-use bevy::prelude::{App, Component, Entity, GlobalTransform, Plugin, Query, Update};
+use bevy::prelude::{
+    App, Commands, Component, DespawnRecursiveExt, Entity, GlobalTransform, IntoSystemConfigs,
+    Plugin, Query, Update, With,
+};
 use bevy::utils::HashMap;
+
+use crate::asteroid::Asteroid;
+use crate::schedule::InGameSet;
+use crate::spaceship::{Spaceship, SpaceshipMissile};
 
 pub struct CollisionDetectionPlugin;
 
 impl Plugin for CollisionDetectionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, collision_detection);
+        app.add_systems(
+            Update,
+            collision_detection.in_set(InGameSet::CollisionDetection),
+        )
+        .add_systems(
+            Update,
+            (
+                handle_collisions::<Asteroid>,
+                handle_collisions::<Spaceship>,
+                handle_collisions::<SpaceshipMissile>,
+            )
+                .in_set(InGameSet::DespawnEntities),
+        );
     }
 }
 
@@ -37,6 +56,23 @@ fn collision_detection(mut query: Query<(Entity, &GlobalTransform, &mut Collider
             collider
                 .colliding_entities
                 .extend(computed_colliding_entities.iter().copied());
+        }
+    }
+}
+
+fn handle_collisions<T: Component>(
+    mut commands: Commands,
+    query: Query<(Entity, &Collider), With<T>>,
+) {
+    for (entity, collider) in query.iter() {
+        for &collided_entity in collider.colliding_entities.iter() {
+            // Entity collided with another entity of the same type.
+            if query.get(collided_entity).is_ok() {
+                continue;
+            }
+
+            // Despawn this entity
+            commands.entity(entity).despawn_recursive();
         }
     }
 }
