@@ -2,10 +2,10 @@ use bevy::prelude::{App, IntoSystemSetConfigs, Plugin, SystemSet, Update};
 
 #[derive(SystemSet, Hash, PartialEq, Eq, Clone, Debug)]
 pub enum InGameSet {
-    DespawnEntities,
     UserInput,
     EntityUpdates,
     CollisionDetection,
+    DespawnEntities,
 }
 
 pub struct SchedulePlugin;
@@ -15,10 +15,13 @@ impl Plugin for SchedulePlugin {
         app.configure_sets(
             Update,
             (
+                // There is a bug
+                // when InGameSet::CollisionDetection is placed after InGameSet::EntityUpdates,
+                // asteroid will spawn and directly despwawn when missile button is kept being pressed
+                InGameSet::CollisionDetection,
                 InGameSet::DespawnEntities,
                 InGameSet::UserInput,
                 InGameSet::EntityUpdates,
-                InGameSet::CollisionDetection,
             )
                 .chain(),
         );
