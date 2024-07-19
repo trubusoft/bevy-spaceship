@@ -1,6 +1,7 @@
 use bevy::prelude::{
-    App, ButtonInput, Commands, Component, default, Entity, IntoSystemConfigs, KeyCode, Plugin,
-    PostStartup, Query, Res, SceneBundle, Time, Transform, Update, Vec3, With,
+    App, ButtonInput, Commands, Component, default, Entity, IntoSystemConfigs, KeyCode, NextState,
+    OnEnter, Plugin, PostStartup, Query, Res, ResMut, SceneBundle, Time, Transform, Update, Vec3,
+    With,
 };
 
 use crate::asset_loader::SceneAssets;
@@ -8,21 +9,25 @@ use crate::collision_detection::{Collider, CollisionDamage};
 use crate::health::Health;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
 use crate::schedule::InGameSet;
+use crate::state::GameState;
 
 pub struct SpaceshipPlugin;
 
 impl Plugin for SpaceshipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, spawn_spaceship).add_systems(
-            Update,
-            (
-                spaceship_movement_controls,
-                spaceship_weapon_controls,
-                spaceship_shield_controls,
+        app.add_systems(PostStartup, spawn_spaceship)
+            .add_systems(OnEnter(GameState::GameOver), spawn_spaceship)
+            .add_systems(
+                Update,
+                (
+                    spaceship_movement_controls,
+                    spaceship_weapon_controls,
+                    spaceship_shield_controls,
+                )
+                    .chain()
+                    .in_set(InGameSet::UserInput),
             )
-                .chain()
-                .in_set(InGameSet::UserInput),
-        );
+            .add_systems(Update, spaceship_destroyed.in_set(InGameSet::EntityUpdates));
     }
 }
 
@@ -121,6 +126,15 @@ fn spaceship_shield_controls(
     };
     if keyboard_input.pressed(KeyCode::Tab) {
         commands.entity(spaceship).insert(SpaceshipShield);
+    }
+}
+
+fn spaceship_destroyed(
+    mut next_state: ResMut<NextState<GameState>>,
+    query: Query<(), With<Spaceship>>,
+) {
+    if query.get_single().is_err() {
+        next_state.set(GameState::GameOver);
     }
 }
 
