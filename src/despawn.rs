@@ -5,6 +5,7 @@ use bevy::prelude::{
 };
 
 use crate::asteroid::Asteroid;
+use crate::health::Health;
 use crate::schedule::InGameSet;
 use crate::spaceship::SpaceshipMissile;
 
@@ -17,6 +18,7 @@ impl Plugin for DespawnPlugin {
             (
                 despawn_far_away_components::<Asteroid>,
                 despawn_far_away_components::<SpaceshipMissile>,
+                despawn_dead_entities,
             )
                 .in_set(InGameSet::DespawnEntities),
         );
@@ -32,6 +34,14 @@ fn despawn_far_away_components<T: Component>(
         if DESPAWN_DISTANCE_THRESHOLD <= distance {
             commands.entity(entity).despawn_recursive();
         }
+    }
+}
+
+fn despawn_dead_entities(mut commands: Commands, query: Query<(Entity, &Health)>) {
+    for (entity, health) in query.iter() {
+        if health.value <= 0.0 {
+            commands.entity(entity).despawn_recursive();
+        };
     }
 }
 

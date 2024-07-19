@@ -7,7 +7,8 @@ use bevy::prelude::{
 use rand::Rng;
 
 use crate::asset_loader::SceneAssets;
-use crate::collision_detection::Collider;
+use crate::collision_detection::{Collider, CollisionDamage};
+use crate::health::Health;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
 use crate::schedule::InGameSet;
 
@@ -50,6 +51,8 @@ fn spawn_asteroid(
 
     commands.spawn((
         Asteroid,
+        Health::new(HEALTH),
+        CollisionDamage::new(COLLISION_DAMAGE),
         MovingObjectBundle {
             velocity: Velocity::new(velocity),
             acceleration: Acceleration::new(acceleration),
@@ -87,3 +90,5 @@ const SPAWN_RANGE_Z: Range<f32> = 0.0..25.0;
 const SPAWN_TIME_SECONDS: f32 = 1.0;
 
 const ROTATION_SPEED: f32 = 2.0;
+const HEALTH: f32 = 50.0;
+const COLLISION_DAMAGE: f32 = 35.0;

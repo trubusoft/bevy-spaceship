@@ -19,7 +19,7 @@ impl Plugin for SchedulePlugin {
             (
                 // There is a bug
                 // when InGameSet::CollisionDetection is placed after InGameSet::EntityUpdates,
-                // asteroid will spawn and directly despwawn when missile button is kept being pressed
+                // asteroid and missile will act like its collided, but it should not
                 InGameSet::CollisionDetection,
                 InGameSet::DespawnEntities,
                 InGameSet::UserInput,
