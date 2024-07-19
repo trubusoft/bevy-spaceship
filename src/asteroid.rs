@@ -67,13 +67,18 @@ fn handle_asteroid_collisions(
     query: Query<(Entity, &Collider), With<Asteroid>>,
 ) {
     for (entity, collider) in query.iter() {
+        let mut despawn_issued: bool = false;
         for &collided_entity in collider.colliding_entities.iter() {
             // Asteroid collided with another asteroid.
             if query.get(collided_entity).is_ok() {
                 continue;
             }
-            // Despawn this asteroid
-            commands.entity(entity).despawn_recursive();
+
+            if !despawn_issued {
+                // Despawn this asteroid
+                commands.entity(entity).despawn_recursive();
+                despawn_issued = true;
+            }
         }
     }
 }
