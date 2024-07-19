@@ -77,7 +77,7 @@ fn spaceship_weapon_controls(
         let spaceship_transform = query.single();
 
         commands.spawn((
-            SpaceshipMisslie,
+            SpaceshipMissile,
             MovingObjectBundle {
                 velocity: Velocity::new(-spaceship_transform.forward() * MISSILE_SPEED),
                 acceleration: Acceleration::new(Vec3::ZERO),
@@ -106,4 +106,4 @@ const MISSILE_FORWARD_SPAWN_RANGE: f32 = 10.0;
 pub struct Spaceship;
 
 #[derive(Component, Debug)]
-pub struct SpaceshipMisslie;
+pub struct SpaceshipMissile;
