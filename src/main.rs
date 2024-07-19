@@ -5,10 +5,18 @@ use debug::DebugPlugin;
 use movement::MovementPlugin;
 use spaceship::SpaceshipPlugin;
 
+use crate::asset_loader::AssetLoaderPlugin;
+use crate::asteroid::AsteroidPlugin;
 use crate::camera::CameraPlugin;
+use crate::collision_detection::CollisionDetectionPlugin;
+use crate::despawn::DespawnPlugin;
 
+mod asset_loader;
+mod asteroid;
 mod camera;
+mod collision_detection;
 mod debug;
+mod despawn;
 mod movement;
 mod spaceship;
 
@@ -20,9 +28,13 @@ fn main() {
             brightness: 750.0,
         })
         .add_plugins(DefaultPlugins)
+        .add_plugins(DespawnPlugin)
         .add_plugins(CameraPlugin)
+        .add_plugins(AssetLoaderPlugin)
         .add_plugins(MovementPlugin)
-        .add_plugins(DebugPlugin)
+        .add_plugins(CollisionDetectionPlugin)
+        //.add_plugins(DebugPlugin)
         .add_plugins(SpaceshipPlugin)
+        .add_plugins(AsteroidPlugin)
         .run();
 }
