@@ -2,6 +2,8 @@ use bevy::prelude::{
     App, Bundle, Component, Plugin, Query, Res, SceneBundle, Time, Transform, Update, Vec3,
 };
 
+use crate::collision_detection::Collider;
+
 pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
@@ -26,6 +28,7 @@ fn apply_acceleration(mut query: Query<(&mut Velocity, &Acceleration)>, time: Re
 pub struct MovingObjectBundle {
     pub velocity: Velocity,
     pub acceleration: Acceleration,
+    pub collider: Collider,
     pub model: SceneBundle,
 }
 
