@@ -1,11 +1,12 @@
 use bevy::prelude::{
-    App, ButtonInput, Commands, Component, default, KeyCode, Plugin, PostStartup, Query, Res,
-    SceneBundle, Time, Transform, Update, Vec3, With,
+    App, ButtonInput, Commands, Component, default, Entity, IntoSystemConfigs, KeyCode, Plugin,
+    PostStartup, Query, Res, SceneBundle, Time, Transform, Update, Vec3, With,
 };
 
 use crate::asset_loader::SceneAssets;
 use crate::collision_detection::Collider;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
+use crate::schedule::InGameSet;
 
 pub struct SpaceshipPlugin;
 
@@ -13,7 +14,13 @@ impl Plugin for SpaceshipPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PostStartup, spawn_spaceship).add_systems(
             Update,
-            (spaceship_movement_controls, spaceship_weapon_controls),
+            (
+                spaceship_movement_controls,
+                spaceship_weapon_controls,
+                spaceship_shield_controls,
+            )
+                .chain()
+                .in_set(InGameSet::UserInput),
         );
     }
 }
@@ -24,7 +31,7 @@ fn spawn_spaceship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
         MovingObjectBundle {
             velocity: Velocity::new(Vec3::ZERO),
             acceleration: Acceleration::new(Vec3::ZERO),
-            collider: Collider::new(10.0),
+            collider: Collider::new(3.0),
             model: SceneBundle {
                 scene: scene_assets.spaceship.clone(),
                 transform: Transform::from_translation(STARTING_TRANSLATION),
@@ -39,7 +46,9 @@ fn spaceship_movement_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
-    let (mut transform, mut velocity) = query.single_mut();
+    let Ok((mut transform, mut velocity)) = query.get_single_mut() else {
+        return;
+    };
 
     let mut movement = 0.0;
     let mut rotation = 0.0;
@@ -74,10 +83,12 @@ fn spaceship_weapon_controls(
     scene_assets: Res<SceneAssets>,
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
-        let spaceship_transform = query.single();
+        let Ok(spaceship_transform) = query.get_single() else {
+            return;
+        };
 
         commands.spawn((
-            SpaceshipMisslie,
+            SpaceshipMissile,
             MovingObjectBundle {
                 velocity: Velocity::new(-spaceship_transform.forward() * MISSILE_SPEED),
                 acceleration: Acceleration::new(Vec3::ZERO),
@@ -95,6 +106,19 @@ fn spaceship_weapon_controls(
     }
 }
 
+fn spaceship_shield_controls(
+    mut commands: Commands,
+    query: Query<Entity, With<Spaceship>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+) {
+    let Ok(spaceship) = query.get_single() else {
+        return;
+    };
+    if keyboard_input.pressed(KeyCode::Tab) {
+        commands.entity(spaceship).insert(SpaceshipShield);
+    }
+}
+
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0, 0.0, -20.0);
 const SPACESHIP_TRANSLATION_SPEED: f32 = 25.0;
 const SPACESHIP_ROTATION_SPEED: f32 = 2.5;
@@ -106,4 +130,7 @@ const MISSILE_FORWARD_SPAWN_RANGE: f32 = 10.0;
 pub struct Spaceship;
 
 #[derive(Component, Debug)]
-pub struct SpaceshipMisslie;
+pub struct SpaceshipMissile;
+
+#[derive(Component, Debug)]
+pub struct SpaceshipShield;

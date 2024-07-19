@@ -1,14 +1,21 @@
 use bevy::prelude::{
-    App, Bundle, Component, Plugin, Query, Res, SceneBundle, Time, Transform, Update, Vec3,
+    App, Bundle, Component, IntoSystemConfigs, Plugin, Query, Res, SceneBundle, Time, Transform,
+    Update, Vec3,
 };
 
 use crate::collision_detection::Collider;
+use crate::schedule::InGameSet;
 
 pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (apply_velocity, apply_acceleration));
+        app.add_systems(
+            Update,
+            (apply_acceleration, apply_velocity)
+                .chain()
+                .in_set(InGameSet::EntityUpdates),
+        );
     }
 }
 

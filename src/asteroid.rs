@@ -1,14 +1,15 @@
 use std::ops::Range;
 
 use bevy::prelude::{
-    App, Commands, Component, default, DespawnRecursiveExt, Entity, Plugin, Query, Res, ResMut,
-    Resource, SceneBundle, Time, Timer, TimerMode, Transform, Update, Vec3, With,
+    App, Commands, Component, default, IntoSystemConfigs, Plugin, Query, Res, ResMut, Resource,
+    SceneBundle, Time, Timer, TimerMode, Transform, Update, Vec3, With,
 };
 use rand::Rng;
 
 use crate::asset_loader::SceneAssets;
 use crate::collision_detection::Collider;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
+use crate::schedule::InGameSet;
 
 pub struct AsteroidPlugin;
 
@@ -19,7 +20,7 @@ impl Plugin for AsteroidPlugin {
         })
         .add_systems(
             Update,
-            (spawn_asteroid, rotate_asteroids, handle_asteroid_collisions),
+            (spawn_asteroid, rotate_asteroids).in_set(InGameSet::EntityUpdates),
         );
     }
 }
@@ -60,27 +61,6 @@ fn spawn_asteroid(
             },
         },
     ));
-}
-
-fn handle_asteroid_collisions(
-    mut commands: Commands,
-    query: Query<(Entity, &Collider), With<Asteroid>>,
-) {
-    for (entity, collider) in query.iter() {
-        let mut despawn_issued: bool = false;
-        for &collided_entity in collider.colliding_entities.iter() {
-            // Asteroid collided with another asteroid.
-            if query.get(collided_entity).is_ok() {
-                continue;
-            }
-
-            if !despawn_issued {
-                // Despawn this asteroid
-                commands.entity(entity).despawn_recursive();
-                despawn_issued = true;
-            }
-        }
-    }
 }
 
 fn rotate_asteroids(mut query: Query<&mut Transform, With<Asteroid>>, time: Res<Time>) {
