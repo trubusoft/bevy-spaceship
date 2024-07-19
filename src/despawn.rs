@@ -14,6 +14,7 @@ impl Plugin for DespawnPlugin {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn despawn_far_away_objects(
     mut commands: Commands,
     query: Query<(Entity, &GlobalTransform), Or<(With<Asteroid>, With<SpaceshipMisslie>)>>,
