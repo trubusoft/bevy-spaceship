@@ -1,7 +1,7 @@
 use bevy::prelude::{
     App, ButtonInput, Commands, Component, default, Entity, IntoSystemConfigs, KeyCode, NextState,
-    OnEnter, Plugin, PostStartup, Query, Res, ResMut, SceneBundle, Time, Transform, Update, Vec3,
-    With,
+    OnEnter, Plugin, PostStartup, Query, Res, ResMut, SceneBundle, StateScoped, Time, Transform,
+    Update, Vec3, With,
 };
 
 use crate::asset_loader::SceneAssets;
@@ -34,6 +34,7 @@ impl Plugin for SpaceshipPlugin {
 fn spawn_spaceship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
     commands.spawn((
         Spaceship,
+        StateScoped(GameState::InGame),
         Health::new(SPACESHIP_HEALTH),
         CollisionDamage::new(SPACESHIP_COLLISION_DAMAGE),
         MovingObjectBundle {
@@ -97,6 +98,7 @@ fn spaceship_weapon_controls(
 
         commands.spawn((
             SpaceshipMissile,
+            StateScoped(GameState::InGame),
             Health::new(MISSILE_HEALTH),
             CollisionDamage::new(MISSILE_COLLISION_DAMAGE),
             MovingObjectBundle {

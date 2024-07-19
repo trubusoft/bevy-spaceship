@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use bevy::prelude::{
     App, Commands, Component, default, IntoSystemConfigs, Plugin, Query, Res, ResMut, Resource,
-    SceneBundle, Time, Timer, TimerMode, Transform, Update, Vec3, With,
+    SceneBundle, StateScoped, Time, Timer, TimerMode, Transform, Update, Vec3, With,
 };
 use rand::Rng;
 
@@ -11,6 +11,7 @@ use crate::collision_detection::{Collider, CollisionDamage};
 use crate::health::Health;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
 use crate::schedule::InGameSet;
+use crate::state::GameState;
 
 pub struct AsteroidPlugin;
 
@@ -51,6 +52,7 @@ fn spawn_asteroid(
 
     commands.spawn((
         Asteroid,
+        StateScoped(GameState::InGame),
         Health::new(HEALTH),
         CollisionDamage::new(COLLISION_DAMAGE),
         MovingObjectBundle {
