@@ -30,7 +30,7 @@ fn main() {
         .add_plugins(AssetLoaderPlugin)
         .add_plugins(MovementPlugin)
         .add_plugins(CollisionDetectionPlugin)
-        .add_plugins(DebugPlugin)
+        //.add_plugins(DebugPlugin)
         .add_plugins(SpaceshipPlugin)
         .add_plugins(AsteroidPlugin)
         .run();
