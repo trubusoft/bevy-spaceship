@@ -30,7 +30,7 @@ fn collision_detection(mut query: Query<(Entity, &GlobalTransform, &mut Collider
         }
     }
 
-    // Second phase: update colliders
+    // Second phase: update colliders.
     for (entity, _, mut collider) in query.iter_mut() {
         collider.colliding_entities.clear();
         if let Some(computed_colliding_entities) = computed_colliding_entities_map.get(&entity) {
