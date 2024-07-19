@@ -1,8 +1,8 @@
 use bevy::app::App;
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    in_state, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State, States,
-    Update,
+    AppExtStates, in_state, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State,
+    States, Update,
 };
 
 #[derive(States, Clone, Copy, Eq, PartialEq, Hash, Default, Debug)]
@@ -17,13 +17,15 @@ pub struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<GameState>().add_systems(
-            Update,
-            (
-                game_state_input_events,
-                transition_to_in_game.run_if(in_state(GameState::GameOver)),
-            ),
-        );
+        app.init_state::<GameState>()
+            .enable_state_scoped_entities::<GameState>()
+            .add_systems(
+                Update,
+                (
+                    game_state_input_events,
+                    transition_to_in_game.run_if(in_state(GameState::GameOver)),
+                ),
+            );
     }
 }
 

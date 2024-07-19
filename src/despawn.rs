@@ -1,14 +1,13 @@
 use bevy::app::App;
 use bevy::prelude::{
-    Commands, Component, DespawnRecursiveExt, Entity, GlobalTransform, IntoSystemConfigs, OnEnter,
-    Plugin, Query, Update, Vec3, With,
+    Commands, Component, DespawnRecursiveExt, Entity, GlobalTransform, IntoSystemConfigs, Plugin,
+    Query, Update, Vec3, With,
 };
 
 use crate::asteroid::Asteroid;
 use crate::health::Health;
 use crate::schedule::InGameSet;
 use crate::spaceship::SpaceshipMissile;
-use crate::state::GameState;
 
 pub struct DespawnPlugin;
 
@@ -22,8 +21,7 @@ impl Plugin for DespawnPlugin {
                 despawn_dead_entities,
             )
                 .in_set(InGameSet::DespawnEntities),
-        )
-        .add_systems(OnEnter(GameState::GameOver), despawn_all_entities);
+        );
     }
 }
 
@@ -44,12 +42,6 @@ fn despawn_dead_entities(mut commands: Commands, query: Query<(Entity, &Health)>
         if health.value <= 0.0 {
             commands.entity(entity).despawn_recursive();
         };
-    }
-}
-
-fn despawn_all_entities(mut commands: Commands, query: Query<Entity, With<Health>>) {
-    for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
     }
 }
 
