@@ -1,7 +1,6 @@
 use bevy::DefaultPlugins;
 use bevy::prelude::{AmbientLight, App, ClearColor, Color};
 
-use debug::DebugPlugin;
 use movement::MovementPlugin;
 use spaceship::SpaceshipPlugin;
 
@@ -11,6 +10,7 @@ use crate::camera::CameraPlugin;
 use crate::collision_detection::CollisionDetectionPlugin;
 use crate::despawn::DespawnPlugin;
 use crate::schedule::SchedulePlugin;
+use crate::state::StatePlugin;
 
 mod asset_loader;
 mod asteroid;
@@ -21,6 +21,7 @@ mod despawn;
 mod movement;
 mod schedule;
 mod spaceship;
+mod state;
 
 fn main() {
     App::new()
@@ -37,6 +38,7 @@ fn main() {
         .add_plugins(AssetLoaderPlugin)
         //.add_plugins(DebugPlugin)
         // game logic
+        .add_plugins(StatePlugin)
         .add_plugins(MovementPlugin)
         .add_plugins(CollisionDetectionPlugin)
         // components

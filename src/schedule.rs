@@ -1,4 +1,6 @@
-use bevy::prelude::{App, IntoSystemSetConfigs, Plugin, SystemSet, Update};
+use bevy::prelude::{App, in_state, IntoSystemSetConfigs, Plugin, SystemSet, Update};
+
+use crate::state::GameState;
 
 #[derive(SystemSet, Hash, PartialEq, Eq, Clone, Debug)]
 pub enum InGameSet {
@@ -23,7 +25,8 @@ impl Plugin for SchedulePlugin {
                 InGameSet::UserInput,
                 InGameSet::EntityUpdates,
             )
-                .chain(),
+                .chain()
+                .run_if(in_state(GameState::InGame)),
         );
     }
 }
